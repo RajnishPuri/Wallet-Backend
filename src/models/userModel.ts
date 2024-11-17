@@ -1,7 +1,5 @@
 import mongoose, { Document, mongo, Schema } from "mongoose";
 import { Iwallet } from "./userWallet";
-import { transactions } from "./userTransactions";
-import { Irequest } from "./userRequestMoneyModel";
 
 interface IUser extends Document {
     firstName: string;

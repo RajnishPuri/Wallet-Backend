@@ -3,6 +3,7 @@ import Wallet from "../models/userWallet";
 import Transactions from "../models/userTransactions";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
+import { v4 as uuidv4 } from "uuid";
 
 interface AuthenticatedRequest extends Request {
     user?: { email: string };
@@ -43,7 +44,8 @@ export const addMoney = async (req: AuthenticatedRequest, res: Response): Promis
             sentTo: email,
             Amount: amount,
             from: "System",
-            transactionId: Date.now().toString(),
+            transactionId: uuidv4(),
+            transactionType: "credit",
         });
         await transaction.save();
 

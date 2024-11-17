@@ -1,13 +1,23 @@
 import mongoose, { Schema, Document } from "mongoose"
 
 export interface Irequest extends Document {
-    senderAccountNumber: Number,
-    Amount: Number,
-    Completed: Boolean,
-    user: mongoose.Schema.Types.ObjectId
+    reciepientEmail: string,
+    reciepientName: string,
+    senderAccountNumber: number,
+    Amount: number,
+    Completed: boolean,
+    // user: mongoose.Schema.Types.ObjectId
 }
 
 const replyModel: Schema<Irequest> = new mongoose.Schema({
+    reciepientName: {
+        type: String,
+        required: true
+    },
+    reciepientEmail: {
+        type: String,
+        required: true
+    },
     senderAccountNumber: {
         type: Number,
         required: true
@@ -21,11 +31,11 @@ const replyModel: Schema<Irequest> = new mongoose.Schema({
         required: false,
         default: false
     },
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true
-    }
+    // user: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "User",
+    //     required: true
+    // }
 })
 
 const replyUserModel = mongoose.model("ReplyUser", replyModel);

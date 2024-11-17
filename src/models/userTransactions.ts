@@ -1,16 +1,16 @@
 import mongoose, { Schema, Document } from "mongoose";
-
 import { v4 as uuidv4 } from "uuid";
 
-export interface transactions extends Document {
+export interface Transactions extends Document {
     sentTo: string;
     Amount: number;
     time: Date;
     from: string;
     transactionId: string;
+    transactionType: "credit" | "debit";
 }
 
-const transactionSchema: Schema<transactions> = new mongoose.Schema({
+const transactionSchema: Schema<Transactions> = new mongoose.Schema({
     sentTo: {
         type: String,
         required: true,
@@ -32,7 +32,12 @@ const transactionSchema: Schema<transactions> = new mongoose.Schema({
         required: true,
         default: uuidv4,
     },
+    transactionType: {
+        type: String,
+        enum: ["credit", "debit"], // Allow only specific values
+        required: true,
+    },
 }, { timestamps: true });
 
-const userTransaction = mongoose.model<transactions>("Transactions", transactionSchema);
-export default userTransaction;
+const UserTransaction = mongoose.model<Transactions>("Transactions", transactionSchema);
+export default UserTransaction;

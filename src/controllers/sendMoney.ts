@@ -1,17 +1,20 @@
 import User from "../models/userModel";
 import Wallet from "../models/userWallet";
 import Transaction from "../models/userTransactions";
-import jwt, { JwtPayload } from 'jsonwebtoken';
 import { Request, Response } from "express";
 import mongoose from "mongoose";
+import { v4 as uuidv4 } from "uuid";
 
 interface AuthenticateRequest extends Request {
     user?: { email: string };
+    amount: number,
+    toUser: string
 }
 
 export const sendMoney = async (req: AuthenticateRequest, res: Response): Promise<Response> => {
+    console.log("hello");
     const { email } = req.user as { email: string }; // Email of the authenticated user
-    const { amount, toUser } = req.body;
+    const { amount, toUser }: AuthenticateRequest = req.body;
 
     if (!amount || amount <= 0 || !email || !toUser) {
         return res.status(400).json({
@@ -39,19 +42,11 @@ export const sendMoney = async (req: AuthenticateRequest, res: Response): Promis
         const senderWallet = await Wallet.findById(sender.wallet).session(session);
         const receiverWallet = await Wallet.findById(receiver.wallet).session(session);
 
-        if (!senderWallet) {
+        if (!senderWallet || !receiverWallet) {
             await session.abortTransaction();
             return res.status(404).json({
                 success: false,
-                message: "Sender's wallet not found.",
-            });
-        }
-
-        if (!receiverWallet) {
-            await session.abortTransaction();
-            return res.status(404).json({
-                success: false,
-                message: "Receiver's wallet not found.",
+                message: "Sender's or receiver's wallet not found.",
             });
         }
 
@@ -69,17 +64,29 @@ export const sendMoney = async (req: AuthenticateRequest, res: Response): Promis
         await senderWallet.save({ session });
         await receiverWallet.save({ session });
 
-        const transaction = new Transaction({
+        // Create debit transaction for sender
+        const debitTransaction = new Transaction({
             sentTo: toUser,
             Amount: amount,
             from: email,
-            transactionId: Date.now().toString(), // Unique ID
+            transactionId: uuidv4(),
+            transactionType: "debit",
         });
 
-        await transaction.save({ session });
+        // Create credit transaction for receiver
+        const creditTransaction = new Transaction({
+            sentTo: toUser,
+            Amount: amount,
+            from: email,
+            transactionId: uuidv4(),
+            transactionType: "credit",
+        });
 
-        sender.transactions.push(transaction._id as mongoose.Schema.Types.ObjectId);
-        receiver.transactions.push(transaction._id as mongoose.Schema.Types.ObjectId);
+        await debitTransaction.save({ session });
+        await creditTransaction.save({ session });
+
+        sender.transactions.push(debitTransaction._id as mongoose.Schema.Types.ObjectId);
+        receiver.transactions.push(creditTransaction._id as mongoose.Schema.Types.ObjectId);
 
         await sender.save({ session });
         await receiver.save({ session });
@@ -88,8 +95,7 @@ export const sendMoney = async (req: AuthenticateRequest, res: Response): Promis
 
         return res.status(200).json({
             success: true,
-            message: "Transaction successful.",
-            transaction,
+            message: "Transaction successful."
         });
     } catch (error) {
         console.error("Error during transaction:", error);
