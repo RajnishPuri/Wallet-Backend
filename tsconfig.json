@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "es6",                            // ES6 output for compatibility
+    "module": "commonjs",                       // Use CommonJS module system
+    "outDir": "./dist",                         // Output directory
+    "rootDir": "./src",                         // Source directory
+    "strict": true,                             // Enable strict type checking
+    "esModuleInterop": true,                    // Allows default imports for CommonJS modules
+    "skipLibCheck": true,                       // Skip type checks of library files
+    "forceConsistentCasingInFileNames": true    // Enforces case-sensitive imports
+  }
+}
