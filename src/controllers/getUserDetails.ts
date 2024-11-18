@@ -15,7 +15,7 @@ export const getUserDetails = async (req: AuthenticatedUser, res: Response): Pro
 
         const userWallet = user?.wallet as Iwallet;
 
-        const fullName = `${user?.firstName} ${user?.lastName}}`;
+        const fullName = `${user?.firstName} ${user?.lastName}`;
 
 
         const data = {

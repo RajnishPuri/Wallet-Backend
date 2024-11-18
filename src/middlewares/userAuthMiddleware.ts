@@ -23,6 +23,7 @@ export const userMiddleware = async (req: AuthenticatedRequest, res: Response, n
     const token = authHeader.split(" ")[1]; // Extract the token after "Bearer"
 
     try {
+        console.log("hello");
         const decoded = await Jwt.verify(token, JWT_SECRET);
         req.user = decoded;
         next();

@@ -9,15 +9,15 @@ import replyUserModel from "../models/userRequestMoneyModel";
 
 interface AuthenticatedUser extends Request {
     user?: { email: string };
-    senderAccountNumber?: Number;
-    Amount?: Number;
-    id?: Number;
+    senderAccountNumber?: number;
+    amount?: number;
+    id?: number;
 }
 
 export const sendrequestMoney = async (req: AuthenticatedUser, res: Response): Promise<Response> => {
     try {
         const { email } = req.user as { email: string };
-        const { senderAccountNumber, Amount }: AuthenticatedUser = req.body;
+        const { senderAccountNumber, amount }: AuthenticatedUser = req.body;
 
         const user = await User.findOne({ email: email }).populate("wallet");
 
@@ -56,22 +56,32 @@ export const sendrequestMoney = async (req: AuthenticatedUser, res: Response): P
             reciepientName: fullName,
             reciepientEmail: email,
             senderAccountNumber: reciepentAccountNumber,
-            Amount: Amount,
+            Amount: amount,
             Completed: false
         });
 
+        console.log("check - ", addUserRequest);
+
         console.log(senderUser);
+        console.log("hello");
+
 
         await addUserRequest.save();
+        console.log("hello2");
+
+
 
         senderUser.requestMoney.push(addUserRequest._id as mongoose.Schema.Types.ObjectId);
         await senderUser.save();
+
+        console.log("Completed");
 
         return res.status(200).json({
             success: true,
             message: "Request Successfully Completed"
         });
     } catch (e) {
+        console.log(e);
         return res.status(500).json({
             success: false,
             message: "Internal Server Issue!"
