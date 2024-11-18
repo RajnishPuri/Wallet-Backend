@@ -77,7 +77,7 @@ export const Register = async (req: Request, res: Response): Promise<Response> =
 
 export const verificationEmail = async (req: Request, res: Response): Promise<Response> => {
     const { otp } = req.body;
-
+    console.log(otp);
     const token = req.cookies.verification_token;
     console.log(token);
     if (!token) {
@@ -148,12 +148,11 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     const { email, password } = req.body;
 
     try {
-
         if (!email || !password) {
             return res.status(300).json({
                 success: false,
-                message: "All Fields are Required"
-            })
+                message: "All Fields are Required",
+            });
         }
 
         const user = await User.findOne({ email: email });
@@ -161,13 +160,11 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
         if (!user) {
             return res.status(301).json({
                 success: false,
-                message: "User is Not Registered with this Email!, Register First"
-            })
+                message: "User is Not Registered with this Email!, Register First",
+            });
         }
 
-        const response: any = await User.findOne({ email: email });
-
-        const passwordValid = await bcrypt.compare(password, response.password);
+        const passwordValid = await bcrypt.compare(password, user.password);
         if (!passwordValid) {
             return res.status(401).json({
                 success: false,
@@ -175,44 +172,35 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
             });
         }
 
-        const token = await jwt.sign({ email }, JWT_SECRET);
+        const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "7d" });
 
-        res.cookie("token", token, {
-            httpOnly: true,
-            maxAge: 6 * 10 * 24 * 60 * 1000 * 7,
-            secure: process.env.NODE_ENV === 'production'
-        })
+        res.setHeader("Authorization", `Bearer ${token}`);
 
         return res.status(200).json({
             success: true,
-            message: "User is Loggedin",
+            message: "Login successful",
+            token: `Bearer ${token}`
         });
-    }
-    catch (e) {
+    } catch (e) {
         return res.status(500).json({
             success: false,
-            message: "Error while login the user!",
+            message: "Error while logging in the user!",
         });
     }
-
-}
+};
 
 export const loggedOut = async (req: Request, res: Response): Promise<Response> => {
-
     try {
-        res.clearCookie('token', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production'
-        });
+        // Optionally: Validate or revoke the token here if needed
         return res.status(200).json({
             success: true,
-            message: "User is Successfully LoggedOut",
+            message: "User is successfully logged out",
         });
-    }
-    catch (e) {
+    } catch (error) {
+        console.error("Error during logout:", error);
         return res.status(500).json({
             success: false,
-            message: "Error while loggedOut the user!",
+            message: "An error occurred while logging out the user",
         });
     }
-}
+};

@@ -6,6 +6,7 @@ import { walletRouter } from "./routes/wallet";
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import cors from 'cors';
 
 dotenv.config();
 
@@ -15,6 +16,14 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
+
+app.use(
+    cors({
+        origin: 'http://localhost:5173', // Allow frontend origin
+        credentials: true,               // Allow cookies and headers like authorization
+        methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
+    })
+);
 
 app.use('/api/v1/auth', userRouter);
 app.use('/api/v1/home', userMiddleware as any, (req: Request, res: Response) => {

@@ -11,14 +11,16 @@ interface AuthenticatedRequest extends Request {
 }
 
 export const userMiddleware = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<Response | void> => {
-    const token = req.cookies.token;
+    const authHeader = req.headers.authorization;
 
-    if (!token) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return res.status(401).json({
             success: false,
-            message: "User is Not Authorized!"
+            message: "User is Not Authorized!",
         });
     }
+
+    const token = authHeader.split(" ")[1]; // Extract the token after "Bearer"
 
     try {
         const decoded = await Jwt.verify(token, JWT_SECRET);
@@ -27,7 +29,7 @@ export const userMiddleware = async (req: AuthenticatedRequest, res: Response, n
     } catch (e) {
         return res.status(403).json({
             success: false,
-            message: "Something went wrong in authentication!"
+            message: "Invalid or Expired Token!",
         });
     }
 };
