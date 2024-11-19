@@ -20,7 +20,7 @@ export const userMiddleware = async (req: AuthenticatedRequest, res: Response, n
         });
     }
 
-    const token = authHeader.split(" ")[1]; // Extract the token after "Bearer"
+    const token = authHeader.split(" ")[1];
 
     try {
         console.log("hello");

@@ -14,8 +14,6 @@ export const getAllTransactions = async (req: AuthenticatedRequest, res: Respons
 
         const alltansactions = user?.transactions;
 
-
-
         console.log(alltansactions);
 
         return res.status(200).json({

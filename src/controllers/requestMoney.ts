@@ -140,7 +140,7 @@ export const completeRequestMoney = async (req: AuthenticatedUser, res: Response
             });
         }
         (senderWallet.balance as number) = senderWallet.balance - requestUser.Amount;
-        (receiverWallet.balance as number) += receiverWallet.balance - requestUser.Amount;
+        (receiverWallet.balance as number) = receiverWallet.balance + requestUser.Amount;
 
 
 
