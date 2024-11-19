@@ -5,7 +5,7 @@ import Transactions from "../models/userTransactions";
 import ReplyUser from '../models/userRequestMoneyModel';
 import mongoose from "mongoose";
 import { v4 as uuidv4 } from "uuid";
-import replyUserModel from "../models/userRequestMoneyModel";
+
 
 interface AuthenticatedUser extends Request {
     user?: { email: string };

@@ -12,9 +12,8 @@ interface AuthenticateRequest extends Request {
 }
 
 export const sendMoney = async (req: AuthenticateRequest, res: Response): Promise<Response> => {
-    console.log("hello");
-    const { email } = req.user as { email: string }; // Email of the authenticated user
-    const { amount, toUser }: AuthenticateRequest = req.body;
+    const { email } = req.user as { email: string }; // Authenticated user's email
+    const { amount, toUser }: { amount: number; toUser: string } = req.body; // Explicitly typed destructuring
 
     if (!amount || amount <= 0 || !email || !toUser) {
         return res.status(400).json({
@@ -28,7 +27,8 @@ export const sendMoney = async (req: AuthenticateRequest, res: Response): Promis
     try {
         session.startTransaction();
 
-        const sender = await User.findOne({ email: email }).populate("wallet").session(session);
+        // Fetch sender and receiver with wallets
+        const sender = await User.findOne({ email }).populate("wallet").session(session);
         const receiver = await User.findOne({ email: toUser }).populate("wallet").session(session);
 
         if (!sender || !receiver || !sender.wallet || !receiver.wallet) {
@@ -50,6 +50,7 @@ export const sendMoney = async (req: AuthenticateRequest, res: Response): Promis
             });
         }
 
+        // Check for sufficient balance
         if (senderWallet.balance < amount) {
             await session.abortTransaction();
             return res.status(400).json({
@@ -58,6 +59,7 @@ export const sendMoney = async (req: AuthenticateRequest, res: Response): Promis
             });
         }
 
+        // Perform transactions
         senderWallet.balance -= amount;
         receiverWallet.balance += amount;
 
@@ -85,17 +87,22 @@ export const sendMoney = async (req: AuthenticateRequest, res: Response): Promis
         await debitTransaction.save({ session });
         await creditTransaction.save({ session });
 
+        // Link transactions to sender and receiver
         sender.transactions.push(debitTransaction._id as mongoose.Schema.Types.ObjectId);
         receiver.transactions.push(creditTransaction._id as mongoose.Schema.Types.ObjectId);
 
         await sender.save({ session });
         await receiver.save({ session });
 
+        // Commit transaction
         await session.commitTransaction();
 
         return res.status(200).json({
             success: true,
-            message: "Transaction successful."
+            message: "Transaction successful.",
+            transactionId: debitTransaction.transactionId,
+            senderBalance: senderWallet.balance,
+            receiverBalance: receiverWallet.balance,
         });
     } catch (error) {
         console.error("Error during transaction:", error);
@@ -110,3 +117,4 @@ export const sendMoney = async (req: AuthenticateRequest, res: Response): Promis
         session.endSession();
     }
 };
+
