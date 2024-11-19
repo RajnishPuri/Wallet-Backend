@@ -139,9 +139,10 @@ export const completeRequestMoney = async (req: AuthenticatedUser, res: Response
                 message: "Insufficient funds in the sender's wallet.",
             });
         }
+        (senderWallet.balance as number) = senderWallet.balance - requestUser.Amount;
+        (receiverWallet.balance as number) += receiverWallet.balance - requestUser.Amount;
 
-        senderWallet.balance -= requestUser.Amount;
-        receiverWallet.balance += requestUser.Amount;
+
 
         await senderWallet.save({ session });
         await receiverWallet.save({ session });

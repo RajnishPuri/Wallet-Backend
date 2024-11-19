@@ -22,6 +22,9 @@ export const sendMoney = async (req: AuthenticateRequest, res: Response): Promis
         });
     }
 
+    console.log("email : ", email);
+    console.log("toUser : ", toUser);
+
     const session = await mongoose.startSession();
 
     try {
@@ -59,9 +62,12 @@ export const sendMoney = async (req: AuthenticateRequest, res: Response): Promis
             });
         }
 
+        console.log("Sender Details : ", senderWallet);
+        console.log("Reciever Details : ", receiverWallet);
+
         // Perform transactions
-        senderWallet.balance -= amount;
-        receiverWallet.balance += amount;
+        (senderWallet.balance as number) = senderWallet.balance - amount;
+        (receiverWallet.balance as number) = receiverWallet.balance + amount;
 
         await senderWallet.save({ session });
         await receiverWallet.save({ session });
