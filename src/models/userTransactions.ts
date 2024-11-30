@@ -4,40 +4,42 @@ import { v4 as uuidv4 } from "uuid";
 export interface Transactions extends Document {
     sentTo: string;
     Amount: number;
-    time: Date;
     from: string;
     transactionId: string;
     transactionType: "credit" | "debit";
 }
 
-const transactionSchema: Schema<Transactions> = new mongoose.Schema({
-    sentTo: {
-        type: String,
-        required: true,
+const transactionSchema: Schema<Transactions> = new mongoose.Schema(
+    {
+        sentTo: {
+            type: String,
+            required: true,
+        },
+        Amount: {
+            type: Number,
+            required: true,
+        },
+        from: {
+            type: String,
+            required: true,
+        },
+        transactionId: {
+            type: String,
+            required: true,
+            default: uuidv4,
+            unique: true,
+        },
+        transactionType: {
+            type: String,
+            enum: ["credit", "debit"], // Restrict values to "credit" or "debit"
+            required: true,
+        },
     },
-    Amount: {
-        type: Number,
-        required: true,
-    },
-    time: {
-        type: Date,
-        default: Date.now,
-    },
-    from: {
-        type: String,
-        required: true,
-    },
-    transactionId: {
-        type: String,
-        required: true,
-        default: uuidv4,
-    },
-    transactionType: {
-        type: String,
-        enum: ["credit", "debit"], // Allow only specific values
-        required: true,
-    },
-}, { timestamps: true });
+    { timestamps: true } // Automatically adds createdAt and updatedAt fields
+);
+
+// Add an index for optimized querying
+transactionSchema.index({ createdAt: 1 });
 
 const UserTransaction = mongoose.model<Transactions>("Transactions", transactionSchema);
 export default UserTransaction;

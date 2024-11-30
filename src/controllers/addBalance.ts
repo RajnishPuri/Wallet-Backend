@@ -21,6 +21,13 @@ export const addMoney = async (req: AuthenticatedRequest, res: Response): Promis
             });
         }
 
+        if (amount > 500) {
+            return res.status(400).json({
+                success: false,
+                message: "You can only add 500 at a time!",
+            });
+        }
+
         const user = await User.findOne({ email }).populate("wallet").exec();
         if (!user || !user.wallet) {
             return res.status(404).json({
@@ -37,9 +44,25 @@ export const addMoney = async (req: AuthenticatedRequest, res: Response): Promis
             });
         }
 
+        // Count the user's credit transactions in the last N transactions
+        const recentTransactions = await Transactions.countDocuments({
+            sentTo: email,
+            transactionType: "credit",
+            createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, // e.g., within the last 24 hours
+        });
+
+        if (recentTransactions >= 5) {
+            return res.status(400).json({
+                success: false,
+                message: "Transaction limit exceeded. You can only add money up to 5 times in 24 hours.",
+            });
+        }
+
+        // Update wallet balance
         wallet.balance += amount;
         await wallet.save();
 
+        // Add a new transaction
         const transaction = new Transactions({
             sentTo: email,
             Amount: amount,
