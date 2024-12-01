@@ -19,9 +19,9 @@ app.use(cookieParser());
 
 app.use(
     cors({
-        origin: 'http://localhost:5173', // Allow frontend origin
-        credentials: true,               // Allow cookies and headers like authorization
-        methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
+        origin: ['http://localhost:5173', 'https://wallet-frontend-eight.vercel.app'],
+        credentials: true,               
+        methods: ['GET', 'POST', 'PUT', 'DELETE'], 
     })
 );
 
