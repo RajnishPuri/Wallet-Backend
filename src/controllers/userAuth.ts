@@ -54,11 +54,7 @@ export const Register = async (req: Request, res: Response): Promise<Response> =
 
         await sendVerificationEmail(email, verificationToken);
 
-        res.cookie('verification_token', token, {
-            httpOnly: true,
-            maxAge: 10 * 60 * 1000, // 10 minutes
-            secure: process.env.NODE_ENV === 'production' // Use only over HTTPS in production
-        });
+        res.set("Authorization", `Bearer ${token}`);
 
         return res.status(200).json({
             success: true,
@@ -77,12 +73,16 @@ export const Register = async (req: Request, res: Response): Promise<Response> =
 
 export const verificationEmail = async (req: Request, res: Response): Promise<Response> => {
     const { otp } = req.body;
-    console.log(otp);
-    const token = req.cookies.verification_token;
-    console.log(token);
-    if (!token) {
-        return res.status(400).json({ success: false, message: "Verification token not found." });
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({
+            success: false,
+            message: "Authorization token not found.",
+        });
     }
+
+    const token = authHeader.split(" ")[1]; // Extract the token
 
     try {
         const data = await jwt.verify(token, JWT_SECRET) as JwtPayload;
