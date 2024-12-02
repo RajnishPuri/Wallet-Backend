@@ -21,7 +21,8 @@ app.use(
     cors({
         origin: ['http://localhost:5173', 'https://wallet-frontend-eight.vercel.app'],
         credentials: true,               
-        methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        exposedHeaders: ["Authorization"]
     })
 );
 
