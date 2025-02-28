@@ -31,6 +31,9 @@ app.use('/api/v1/home', userMiddleware as any, (req: Request, res: Response) => 
     res.send("This is Protected Route.");
 })
 app.use('/api/v1', userMiddleware as any, walletRouter);
+app.get('/healthz', (req, res) => {
+    res.status(200).send('OK');
+});
 
 app.listen(PORT, async () => {
     await dbConnect()
